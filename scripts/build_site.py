@@ -51,6 +51,53 @@ def _rows(leaderboard):
     return rows
 
 
+SEED_NAMES = {
+    80000: ("Soft Landing", "calm"),
+    80011: ("AI Capex Pays Off", "tech bull"),
+    80013: ("Energy Abundance", "energy bull"),
+    80014: ("Manufacturing Reshoring", "industrials bull"),
+    80017: ("AI Bubble Deflation", "tech bear"),
+    80018: ("Inflation Re-Acceleration", "macro shock"),
+    80019: ("Credit Intermediation Stress", "financial crisis"),
+    80021: ("Taiwan Strait Escalation", "geopolitical"),
+    80022: ("Middle East Energy Disruption", "energy shock"),
+    80023: ("2013 China Hard Landing", "global bear"),
+}
+
+
+def _model_scenarios(results_dir: Path):
+    """Per-scenario rows for the first non-baseline agent (the spotlight model)."""
+    import re
+
+    scores_dir = results_dir / "scores"
+    if not scores_dir.exists():
+        return None, []
+    by_agent: dict = {}
+    for f in sorted(scores_dir.glob("*.json")):
+        s = json.loads(f.read_text())
+        by_agent.setdefault(s.get("agent_name", ""), []).append(s)
+    model = next(
+        (a for a in by_agent if a and not a.startswith("baseline") and not a.startswith("mock")),
+        None,
+    )
+    if not model:
+        return None, []
+    rows = []
+    for s in by_agent[model]:
+        m = re.search(r"seed_(\d+)", s.get("scenario_slug", ""))
+        seed = int(m.group(1)) if m else 0
+        name, bucket = SEED_NAMES.get(seed, (s.get("scenario_slug", "?"), ""))
+        rows.append(
+            {
+                "seed": seed, "name": name, "bucket": bucket,
+                "ret": s.get("total_return"), "alpha": s.get("alpha_ann"),
+                "appraisal": s.get("appraisal_ratio"), "excess": s.get("excess_return"),
+            }
+        )
+    rows.sort(key=lambda r: r["seed"])
+    return model, rows
+
+
 def build(results_dir: Path, out_dir: Path) -> Path:
     lb = json.loads((results_dir / "leaderboard.json").read_text())
     meta = json.loads((results_dir / "run_meta.json").read_text())
@@ -101,9 +148,42 @@ def build(results_dir: Path, out_dir: Path) -> Path:
         "Model submissions are open; see <a href=\"#submit\">Submit a model</a>.</div>"
     )
 
+    # ---- per-scenario spotlight for the leading model (drives the "beat it" hook) ----
+    model_name, mscn = _model_scenarios(results_dir)
+    spotlight = ""
+    if mscn:
+        lost = sum(1 for r in mscn if isinstance(r["excess"], (int, float)) and r["excess"] < 0)
+        amax = max((abs(r["alpha"]) for r in mscn if isinstance(r["alpha"], (int, float))), default=1)
+        srows = []
+        for r in mscn:
+            aw = (abs(r["alpha"]) / amax * 100) if isinstance(r["alpha"], (int, float)) and amax else 0
+            srows.append(
+                f'<tr><td class="agent"><span class="agent-name">{html.escape(r["name"])}</span>'
+                f'<span class="tag tag-base">{html.escape(r["bucket"])}</span></td>'
+                f'<td class="num down">{_fmt_pct(r["ret"])}</td>'
+                f'<td class="num appraisal"><span class="down">{_fmt_pct(r["alpha"])}</span>'
+                f'<span class="bar"><span class="bar-fill down" style="width:{aw:.0f}%"></span></span></td>'
+                f'<td class="num down">{_fmt_num(r["appraisal"])}</td>'
+                f'<td class="num down">{_fmt_pct(r["excess"])}</td></tr>'
+            )
+        spotlight = (
+            '<section id="spotlight"><div class="wrap">'
+            f'<div class="sec-head"><h2>{html.escape(model_name)}: beaten by the market in every regime</h2>'
+            f'<p class="sec-note"><b>{lost} of {len(mscn)}</b> scenarios lost to a plain hold of the '
+            'universe. Negative alpha in calm, bull, bear and crisis alike. The bar to clear is low.</p></div>'
+            '<div class="board-wrap"><div class="board-scroll"><table>'
+            '<thead><tr><th>Scenario</th><th>Return</th><th>Alpha (ann)</th><th>Appraisal</th>'
+            '<th>vs market</th></tr></thead><tbody>' + "".join(srows) + '</tbody></table></div>'
+            f'<div class="board-foot"><span>{lost}/{len(mscn)} regimes lost to the market</span>'
+            '<span>proxy: equal-weight universe</span></div></div>'
+            '<p class="spotlight-cta">Think your model actually beats this? '
+            '<a href="#submit">Submit it &rarr;</a></p></div></section>'
+        )
+
     tmpl = _TEMPLATE
     repl = {
         "@@ROWS@@": "".join(body_rows),
+        "@@SPOTLIGHT@@": spotlight,
         "@@STATUS@@": status_banner,
         "@@NTICKERS@@": f"{n_tickers:,}" if isinstance(n_tickers, int) else str(n_tickers),
         "@@NSCEN@@": str(n_scen),
@@ -271,6 +351,10 @@ _TEMPLATE = r"""<!doctype html>
   .bar-fill{display:block;height:100%;border-radius:3px}
   .bar-fill.up{background:var(--accent)} .bar-fill.down{background:var(--down)}
   .row-baseline .agent-name{color:var(--muted);font-weight:500}
+  #spotlight{padding:64px 0}
+  .spotlight-cta{margin:22px 0 0;text-align:center;font-size:1.05rem;color:var(--muted)}
+  .spotlight-cta a{color:var(--accent);font-weight:650;text-decoration:none}
+  .spotlight-cta a:hover{text-decoration:underline}
   .board-foot{display:flex;flex-wrap:wrap;gap:8px 18px;padding:13px 16px;font-size:12.5px;color:var(--muted);
     border-top:1px solid var(--border);font-family:var(--mono)}
 
@@ -388,6 +472,8 @@ _TEMPLATE = r"""<!doctype html>
     </div>
   </div>
 </section>
+
+@@SPOTLIGHT@@
 
 <section id="why" style="background:var(--surface-2)">
   <div class="wrap">
