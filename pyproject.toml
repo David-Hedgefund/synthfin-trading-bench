@@ -1,0 +1,35 @@
+[project]
+name = "synthfin-trading-bench"
+version = "0.1.0"
+description = "A contamination-free sequential trading benchmark for LLM agents, built on fully-synthetic financial scenarios."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "David HF" }]
+dependencies = [
+    "numpy>=1.24",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# Provider SDKs are optional: install only the ones you intend to run.
+anthropic = ["anthropic>=0.40"]
+openai = ["openai>=1.40"]
+gemini = ["google-genai>=0.3"]
+all = ["anthropic>=0.40", "openai>=1.40", "google-genai>=0.3"]
+dev = ["pytest>=7.4", "ruff>=0.4"]
+
+[project.scripts]
+sftb-run = "bench.runner:main"
+sftb-leaderboard = "bench.leaderboard:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["bench*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

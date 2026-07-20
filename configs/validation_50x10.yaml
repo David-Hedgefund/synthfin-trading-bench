@@ -1,0 +1,20 @@
+# Cheap, API-free validation config: mock LLM + baselines on the local 50x10 corpus.
+# Use this to confirm the harness works end-to-end before spending on real model runs.
+corpus_path: ./data/synthfin_50x10
+output_dir: results
+scenarios: []            # empty = all 10 scenarios
+
+run:
+  rebalance_every_days: 21   # ~monthly
+  warmup_days: 63            # ~one quarter of history before the first decision
+  max_position_weight: 0.10
+  cost_bps: 5
+  max_universe_rows: 0       # 50 tickers fit easily; show all
+  detail_candidates: 10
+
+agents:
+  - {provider: baseline, strategy: buyhold,     name: baseline_buyhold}
+  - {provider: baseline, strategy: ew_rebalance, name: baseline_ew_rebal}
+  - {provider: baseline, strategy: momentum,    name: baseline_momentum, top_frac: 0.2}
+  - {provider: baseline, strategy: random,      name: baseline_random, basket: 10, seed: 12345}
+  - {provider: mock,     name: mock_llm,        top_k: 8}

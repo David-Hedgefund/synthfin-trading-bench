@@ -1,0 +1,35 @@
+# Full multi-model config. Requires API keys in the environment:
+#   ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY
+# and the matching extras installed:  pip install -e ".[all]"
+#
+# Model ids below are examples — pin the exact snapshots you want to publish.
+corpus_path: ./data/synthfin_50x10
+output_dir: results
+scenarios: []
+
+run:
+  rebalance_every_days: 21
+  warmup_days: 63
+  max_position_weight: 0.10
+  cost_bps: 5
+  max_universe_rows: 0        # for a 1000-ticker corpus, cap this (e.g. 250) to control tokens
+  detail_candidates: 15
+  news_window_days: 30
+  max_docs: 40
+  seed: 12345
+
+agents:
+  # --- baselines (always include: they calibrate the leaderboard) ---
+  - {provider: baseline, strategy: buyhold,      name: baseline_buyhold}
+  - {provider: baseline, strategy: momentum,     name: baseline_momentum, top_frac: 0.1}
+  - {provider: baseline, strategy: random,       name: baseline_random, basket: 10, seed: 12345}
+
+  # --- Anthropic ---
+  - {provider: anthropic, name: claude-opus-4.8,  model: claude-opus-4-8,        temperature: 0}
+  - {provider: anthropic, name: claude-sonnet-5,  model: claude-sonnet-5,        temperature: 0}
+
+  # --- OpenAI ---
+  - {provider: openai,    name: gpt-5.4,          model: gpt-5.4,                temperature: 0}
+
+  # --- Google Gemini ---
+  - {provider: gemini,    name: gemini-2.5-pro,   model: gemini-2.5-pro,         temperature: 0}

@@ -1,0 +1,19 @@
+# Baseline-only run on the 1000x10 corpus (no API cost). Proves the harness end-to-end at
+# 1000 tickers and produces reference numbers for the leaderboard.
+corpus_path: ./data/synthfin_1000x10
+output_dir: results
+scenarios: []
+
+run:
+  rebalance_every_days: 21
+  warmup_days: 63
+  max_position_weight: 0.05
+  cost_bps: 5
+  max_universe_rows: 0
+  detail_candidates: 15
+
+agents:
+  - {provider: baseline, strategy: buyhold,      name: baseline_buyhold}
+  - {provider: baseline, strategy: ew_rebalance, name: baseline_ew_rebal}
+  - {provider: baseline, strategy: momentum,     name: baseline_momentum, top_frac: 0.1}
+  - {provider: baseline, strategy: random,       name: baseline_random, basket: 25, seed: 12345}

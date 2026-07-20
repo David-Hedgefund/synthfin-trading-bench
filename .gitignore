@@ -1,0 +1,28 @@
+# results are reproducible artifacts, not source
+results/
+# datasets are hosted separately (see docs/DATA_CARD.md); never commit corpora
+data/synthfin_*
+data/*.tar.zst
+data/*.tar.gz
+# point-in-time index caches written next to corpora
+**/.ptindex.json
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+.DS_Store
+
+# internal ops notes (VM/infra specifics) — never publish
+internal/

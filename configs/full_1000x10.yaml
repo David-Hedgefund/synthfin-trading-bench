@@ -1,0 +1,28 @@
+# The published benchmark: ~1000 tickers x 10 scenarios (operating tickers, generator v0.1).
+# Corpus: private HF dataset  daviddata1/synthfin-trading-bench-1000x10  (synthfin_1000x10.zip)
+#   version sha256: 4fda3b6ed7f5e03df5b07d45ea832be661fdd5f3dc81ce21b8cd6118f6ac9e21
+# Download + unzip to ./data/synthfin_1000x10, then run. (No ETFs -> EW-universe market proxy.)
+# At 1000 tickers the universe snapshot is capped to keep prompts tractable; raise/lower
+# max_universe_rows to trade coverage against token cost.
+corpus_path: ./data/synthfin_1000x10
+output_dir: results
+scenarios: []
+
+run:
+  rebalance_every_days: 21          # ~monthly; ~24 decisions per 2y scenario
+  warmup_days: 63
+  max_position_weight: 0.05         # 1000-name universe → tighter single-name cap
+  cost_bps: 5
+  max_universe_rows: 250            # show the 250 most relevant names (held + top |momentum|)
+  detail_candidates: 20
+  news_window_days: 30
+  max_docs: 50
+  seed: 12345
+
+agents:
+  - {provider: baseline, strategy: buyhold,      name: baseline_buyhold}
+  - {provider: baseline, strategy: momentum,     name: baseline_momentum, top_frac: 0.1}
+  - {provider: baseline, strategy: random,       name: baseline_random, basket: 25, seed: 12345}
+  - {provider: anthropic, name: claude-opus-4.8, model: claude-opus-4-8,  temperature: 0}
+  - {provider: openai,    name: gpt-5.4,         model: gpt-5.4,          temperature: 0}
+  - {provider: gemini,    name: gemini-2.5-pro,  model: gemini-2.5-pro,   temperature: 0}
