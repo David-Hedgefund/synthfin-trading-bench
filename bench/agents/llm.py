@@ -142,6 +142,23 @@ class OpenAIAgent(LLMAgent):
         return text, usage
 
 
+class XAIAgent(OpenAIAgent):
+    """xAI Grok. The xAI API is OpenAI-compatible, so we reuse OpenAIAgent's completion path
+    and only swap the client (base_url + XAI_API_KEY). Grok accepts standard chat params
+    (temperature + max_tokens + json_object), so it takes the non-reasoning branch."""
+
+    provider = "xai"
+
+    def _client_init(self):
+        import openai  # lazy
+
+        key = os.environ.get(self.api_key_env or "XAI_API_KEY")
+        return openai.OpenAI(api_key=key, base_url="https://api.x.ai/v1")
+
+    def _is_reasoning(self) -> bool:
+        return False
+
+
 class GeminiAgent(LLMAgent):
     provider = "gemini"
 

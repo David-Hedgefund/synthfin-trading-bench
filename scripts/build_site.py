@@ -65,8 +65,14 @@ SEED_NAMES = {
 }
 
 
-def _model_scenarios(results_dir: Path):
-    """Per-scenario rows for the first non-baseline agent (the spotlight model)."""
+def _is_model(name: str) -> bool:
+    return bool(name) and not name.startswith("baseline") and not name.startswith("mock")
+
+
+def _model_scenarios(results_dir: Path, leaderboard):
+    """Per-scenario rows for the spotlight model: the top-ranked (best-Sharpe) LLM on the
+    board. Featuring the strongest model - not an alphabetical accident - makes the point
+    that even the best agent trails a passive basket."""
     import re
 
     scores_dir = results_dir / "scores"
@@ -76,10 +82,14 @@ def _model_scenarios(results_dir: Path):
     for f in sorted(scores_dir.glob("*.json")):
         s = json.loads(f.read_text())
         by_agent.setdefault(s.get("agent_name", ""), []).append(s)
+    # leaderboard is Sharpe-sorted; pick the first model in that order.
     model = next(
-        (a for a in by_agent if a and not a.startswith("baseline") and not a.startswith("mock")),
+        (r.get("agent_name", "") for r in leaderboard
+         if _is_model(r.get("agent_name", "")) and r.get("agent_name", "") in by_agent),
         None,
     )
+    if not model:  # fall back to any model present
+        model = next((a for a in by_agent if _is_model(a)), None)
     if not model:
         return None, []
     rows = []
@@ -149,28 +159,51 @@ def build(results_dir: Path, out_dir: Path) -> Path:
     )
 
     # ---- per-scenario spotlight for the leading model (drives the "beat it" hook) ----
-    model_name, mscn = _model_scenarios(results_dir)
+    model_name, mscn = _model_scenarios(results_dir, lb)
+    n_models = sum(1 for r in rows if r["kind"] == "model")
     spotlight = ""
     if mscn:
+        n = len(mscn)
         lost = sum(1 for r in mscn if isinstance(r["excess"], (int, float)) and r["excess"] < 0)
+        neg_ret = sum(1 for r in mscn if isinstance(r["ret"], (int, float)) and r["ret"] < 0)
+        best = n_models > 1  # is the featured model the best of several?
+        if lost == n:
+            head = f"{html.escape(model_name)}: beaten by the market in all {n} regimes"
+            note = (
+                (f"The strongest LLM on the board " if best else "")
+                + f"lost to a plain hold of the universe in <b>every one of {n}</b> scenarios "
+                "- calm, bull, bear and crisis alike. The bar to clear is low."
+            )
+        else:
+            head = (
+                f"{html.escape(model_name)}: "
+                + ("the top LLM here, still underwater" if best else "still underwater")
+            )
+            note = (
+                (f"Best model on the board, yet it " if best else "It ")
+                + f"lost money in <b>{neg_ret} of {n}</b> regimes and trailed a passive basket in "
+                f"<b>{lost}</b>. Negative alpha on average - in calm, bull, bear and crisis alike."
+            )
         amax = max((abs(r["alpha"]) for r in mscn if isinstance(r["alpha"], (int, float))), default=1)
+        def _sc(x):  # sign class - green for the rare regime an LLM actually wins
+            return "up" if isinstance(x, (int, float)) and x >= 0 else "down"
+
         srows = []
         for r in mscn:
             aw = (abs(r["alpha"]) / amax * 100) if isinstance(r["alpha"], (int, float)) and amax else 0
             srows.append(
                 f'<tr><td class="agent"><span class="agent-name">{html.escape(r["name"])}</span>'
                 f'<span class="tag tag-base">{html.escape(r["bucket"])}</span></td>'
-                f'<td class="num down">{_fmt_pct(r["ret"])}</td>'
-                f'<td class="num appraisal"><span class="down">{_fmt_pct(r["alpha"])}</span>'
-                f'<span class="bar"><span class="bar-fill down" style="width:{aw:.0f}%"></span></span></td>'
-                f'<td class="num down">{_fmt_num(r["appraisal"])}</td>'
-                f'<td class="num down">{_fmt_pct(r["excess"])}</td></tr>'
+                f'<td class="num {_sc(r["ret"])}">{_fmt_pct(r["ret"])}</td>'
+                f'<td class="num appraisal"><span class="{_sc(r["alpha"])}">{_fmt_pct(r["alpha"])}</span>'
+                f'<span class="bar"><span class="bar-fill {_sc(r["alpha"])}" style="width:{aw:.0f}%"></span></span></td>'
+                f'<td class="num {_sc(r["appraisal"])}">{_fmt_num(r["appraisal"])}</td>'
+                f'<td class="num {_sc(r["excess"])}">{_fmt_pct(r["excess"])}</td></tr>'
             )
         spotlight = (
             '<section id="spotlight"><div class="wrap">'
-            f'<div class="sec-head"><h2>{html.escape(model_name)}: beaten by the market in every regime</h2>'
-            f'<p class="sec-note"><b>{lost} of {len(mscn)}</b> scenarios lost to a plain hold of the '
-            'universe. Negative alpha in calm, bull, bear and crisis alike. The bar to clear is low.</p></div>'
+            f'<div class="sec-head"><h2>{head}</h2>'
+            f'<p class="sec-note">{note}</p></div>'
             '<div class="board-wrap"><div class="board-scroll"><table>'
             '<thead><tr><th>Scenario</th><th>Return</th><th>Alpha (ann)</th><th>Appraisal</th>'
             '<th>vs market</th></tr></thead><tbody>' + "".join(srows) + '</tbody></table></div>'

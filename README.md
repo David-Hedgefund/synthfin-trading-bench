@@ -70,7 +70,7 @@ pip install -e ".[dev]"                 # core; add [anthropic]/[openai]/[gemini
 # 1) Free, API-less smoke test: mock LLM + baselines on the bundled 50×10 corpus
 python -m bench.runner configs/validation_50x10.yaml --run-id smoke
 
-# 2) Real models (needs ANTHROPIC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY)
+# 2) Real models (needs ANTHROPIC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY / XAI_API_KEY)
 python -m bench.runner configs/default.yaml --run-id demo
 
 # 3) The published benchmark (after provisioning the 1000×10 corpus)
@@ -102,7 +102,7 @@ bench/            the harness (importable, no side effects on import)
   observation.py    builds the point-in-time observation for each decision
   simulator.py      portfolio engine: next-open execution, costs, accounting
   scoring.py        performance + CAPM skill metrics + generator attribution
-  agents/           provider adapters (anthropic/openai/gemini) + baselines + mock
+  agents/           provider adapters (anthropic/openai/gemini/xai) + baselines + mock
   runner.py         orchestration; leaderboard.py: aggregation/rendering
 configs/          validation_50x10 · default · full_1000x10
 docs/             METHODOLOGY · DATA_CARD · CONTAMINATION · PUBLISHING

@@ -1,0 +1,27 @@
+# Google Gemini on the 1000x10 corpus. Scoring settings match the baseline run so results are
+# comparable; the only difference is max_universe_rows (capped for the LLM prompt vs 0/all for
+# baselines) — that only shapes what the agent sees, not the market or the scoring.
+# corpus_path is overridden on the CLI to the VM's extracted corpus.
+corpus_path: ./data/synthfin_1000x10
+output_dir: results
+scenarios: []
+
+run:
+  rebalance_every_days: 21
+  warmup_days: 63
+  max_position_weight: 0.05
+  gross_leverage: 1.0
+  cost_bps: 5
+  lb_1m: 21
+  lb_3m: 63
+  lb_12m: 252
+  max_universe_rows: 250      # cap the universe table shown to the model (vs all 1000 for baselines)
+  detail_candidates: 15
+  news_window_days: 30
+  max_docs: 40
+  doc_max_chars: 1500
+  seed: 12345
+
+agents:
+  - {provider: gemini, name: gemini-3.5-flash, model: gemini-3.5-flash,
+     max_tokens: 16000, max_universe: 250, max_retries: 5}
