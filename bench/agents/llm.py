@@ -105,23 +105,39 @@ class OpenAIAgent(LLMAgent):
         key = os.environ.get(self.api_key_env or "OPENAI_API_KEY")
         return openai.OpenAI(api_key=key)
 
+    def _is_reasoning(self) -> bool:
+        m = (self.model or "").lower()
+        return m.startswith("o1") or m.startswith("o3") or m.startswith("o4") or m.startswith("gpt-5")
+
     def _complete(self, system: str, user: str) -> tuple[str, dict[str, Any]]:
         # Chat Completions is the most broadly compatible surface across GPT-5.x snapshots.
-        resp = self.client().chat.completions.create(
-            model=self.model,
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
-            response_format={"type": "json_object"},
-            messages=[
+        params: dict[str, Any] = {
+            "model": self.model,
+            "response_format": {"type": "json_object"},
+            "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-        )
+        }
+        if self._is_reasoning():
+            # GPT-5 / o-series reasoning models: temperature is fixed at 1 (omit it), and the
+            # token budget is passed as max_completion_tokens (must also cover reasoning tokens).
+            params["max_completion_tokens"] = max(self.max_tokens, 4096)
+            eff = self.params.get("reasoning_effort")
+            if eff:
+                params["reasoning_effort"] = eff
+        else:
+            params["temperature"] = self.temperature
+            params["max_tokens"] = self.max_tokens
+        resp = self.client().chat.completions.create(**params)
         text = resp.choices[0].message.content or ""
         u = resp.usage
         usage = {
             "input_tokens": getattr(u, "prompt_tokens", None),
             "output_tokens": getattr(u, "completion_tokens", None),
+            "reasoning_tokens": getattr(
+                getattr(u, "completion_tokens_details", None), "reasoning_tokens", None
+            ),
         }
         return text, usage
 
