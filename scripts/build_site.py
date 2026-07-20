@@ -20,11 +20,11 @@ GITHUB_URL = "https://github.com/David-Hedgefund/synthfin-trading-bench"
 
 
 def _fmt_pct(x, digits=1):
-    return f"{x*100:+.{digits}f}%" if isinstance(x, (int, float)) else "—"
+    return f"{x*100:+.{digits}f}%" if isinstance(x, (int, float)) else "-"
 
 
 def _fmt_num(x, digits=2):
-    return f"{x:+.{digits}f}" if isinstance(x, (int, float)) else "—"
+    return f"{x:+.{digits}f}" if isinstance(x, (int, float)) else "-"
 
 
 def _rows(leaderboard):
@@ -88,16 +88,16 @@ def build(results_dir: Path, out_dir: Path) -> Path:
           <td class="num dim">{_fmt_pct(r['win'],0)}</td>
         </tr>""")
 
-    n_tickers = meta.get("n_tickers", "—")
+    n_tickers = meta.get("n_tickers", "-")
     n_scen = len(meta.get("scenarios", []))
     chash = (meta.get("corpus_hash") or "")[:12]
-    profile = meta.get("corpus_profile", "—")
-    reb = meta.get("run_config", {}).get("rebalance_every_days", "—")
+    profile = meta.get("corpus_profile", "-")
+    reb = meta.get("run_config", {}).get("rebalance_every_days", "-")
 
     status_banner = (
         ""
         if has_models
-        else '<div class="banner">Preview leaderboard — baseline strategies only. '
+        else '<div class="banner">Preview leaderboard - baseline strategies only. '
         "Model submissions are open; see <a href=\"#submit\">Submit a model</a>.</div>"
     )
 
@@ -135,7 +135,7 @@ def main() -> None:
 
 # --------------------------------------------------------------------------------------
 # The page. Self-contained (no external assets) so it works identically on GitHub Pages
-# and in a sandboxed preview. Data numbers use ui-monospace tabular figures — the site's
+# and in a sandboxed preview. Data numbers use ui-monospace tabular figures - the site's
 # core identity: synthetic-market data rendered like a trading terminal.
 # --------------------------------------------------------------------------------------
 _TEMPLATE = r"""<!doctype html>
@@ -143,7 +143,7 @@ _TEMPLATE = r"""<!doctype html>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SynthFin Trading Bench — a contamination-free LLM trading benchmark</title>
+<title>SynthFin Trading Bench - a contamination-free LLM trading benchmark</title>
 <meta name="description" content="A contamination-free sequential trading benchmark for LLM agents, run on fully synthetic markets. Models manage a portfolio through curated macro regimes and are scored on risk-adjusted return and stock-selection skill." />
 <style>
   :root{
@@ -335,8 +335,8 @@ _TEMPLATE = r"""<!doctype html>
   <div class="wrap hero-in">
     <p class="eyebrow">Contamination-free · fully synthetic markets</p>
     <h1>The trading benchmark models can't have memorized.</h1>
-    <p class="lede">LLM agents manage a portfolio through curated macro regimes — AI-bubble deflations,
-      credit crises, geopolitical shocks — seeing only point-in-time prices, filings, news and
+    <p class="lede">LLM agents manage a portfolio through curated macro regimes - AI-bubble deflations,
+      credit crises, geopolitical shocks - seeing only point-in-time prices, filings, news and
       estimates. Every market is <b>machine-generated and unpublished</b>, so no model has ever seen
       it. Scored on realized, risk-adjusted <b>stock-selection skill</b>.</p>
     <div class="cta-row">
@@ -358,7 +358,7 @@ _TEMPLATE = r"""<!doctype html>
     <div class="sec-head">
       <h2>Leaderboard</h2>
       <p class="sec-note">Ranked by Sharpe across scenarios. <b>Appraisal</b> is annualized
-        alpha ÷ idiosyncratic vol — skill net of market beta.</p>
+        alpha ÷ idiosyncratic vol - skill net of market beta.</p>
     </div>
     @@STATUS@@
     <div class="board-wrap">
@@ -395,11 +395,11 @@ _TEMPLATE = r"""<!doctype html>
       <p class="sec-note">Real-market trading benchmarks fight data leakage. This one removes it by construction.</p></div>
     <div class="pillars">
       <div class="card"><div class="ic">∅</div><h3>Provably uncontaminated</h3>
-        <p>The data does not exist outside this benchmark. There is no corpus to have trained on — so a
+        <p>The data does not exist outside this benchmark. There is no corpus to have trained on - so a
           high score measures capability, never memorization.</p></div>
       <div class="card"><div class="ic">↻</div><h3>Refreshable</h3>
         <p>Suspect leakage after release? Generate a new corpus with new seeds and re-run. The task is
-          fixed; the data is disposable — the property static benchmarks can't offer.</p></div>
+          fixed; the data is disposable - the property static benchmarks can't offer.</p></div>
       <div class="card"><div class="ic">α</div><h3>Skill, not luck</h3>
         <p>Returns regress onto the market to isolate alpha; the appraisal ratio measures stock-selection
           skill net of beta. Beating a rising tide doesn't count.</p></div>
@@ -413,7 +413,7 @@ _TEMPLATE = r"""<!doctype html>
       <p class="sec-note">A sequential portfolio task with strict no-lookahead execution.</p></div>
     <div class="steps">
       <div class="step"><h4>Observe</h4><p>Each period the agent sees point-in-time prices, 10-Q
-        financials, earnings, analyst estimates, ownership and news — all dated on or before the day.</p></div>
+        financials, earnings, analyst estimates, ownership and news - all dated on or before the day.</p></div>
       <div class="step"><h4>Allocate</h4><p>It returns a target portfolio as weights across the universe.
         Malformed output is clipped to the constraints, never invalid.</p></div>
       <div class="step"><h4>Execute</h4><p>Orders fill at the next session's open with transaction costs.
@@ -445,7 +445,7 @@ python scripts/build_site.py --run my-model</pre>
           <li>Every submission pins the model id + decoding params, the corpus content-hash, and the
             harness commit.</li>
           <li>We verify by re-scoring your trajectories with the public scorer.</li>
-          <li>Numbers are published alongside the baselines and cross-scenario variance — a single
+          <li>Numbers are published alongside the baselines and cross-scenario variance - a single
             averaged number without a baseline isn't meaningful.</li>
         </ol>
       </div>
