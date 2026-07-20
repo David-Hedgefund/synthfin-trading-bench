@@ -108,10 +108,14 @@ def _model_scenarios(results_dir: Path, leaderboard):
     return model, rows
 
 
-def build(results_dir: Path, out_dir: Path) -> Path:
+def build(results_dir: Path, out_dir: Path, models_only: bool = False) -> Path:
     lb = json.loads((results_dir / "leaderboard.json").read_text())
     meta = json.loads((results_dir / "run_meta.json").read_text())
     rows = _rows(lb)
+    if models_only:
+        rows = [r for r in rows if r["kind"] == "model"]
+        for i, r in enumerate(rows, 1):  # re-rank the models-only view
+            r["rank"] = i
     has_models = any(r["kind"] == "model" for r in rows)
 
     # scale appraisal bars across the board
@@ -240,9 +244,11 @@ def main() -> None:
     ap.add_argument("--run", default="validation", help="results/<run> to render")
     ap.add_argument("--results", default="", help="explicit results dir (overrides --run)")
     ap.add_argument("--out", default="site", help="output site directory")
+    ap.add_argument("--models-only", action="store_true", help="hide baseline rows from the table")
     args = ap.parse_args()
     results_dir = Path(args.results) if args.results else ROOT / "results" / args.run
-    out = build(results_dir, ROOT / args.out if not Path(args.out).is_absolute() else Path(args.out))
+    out_dir = ROOT / args.out if not Path(args.out).is_absolute() else Path(args.out)
+    out = build(results_dir, out_dir, models_only=args.models_only)
     print(f"wrote {out}")
 
 
