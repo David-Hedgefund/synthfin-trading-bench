@@ -88,16 +88,19 @@ python -m bench.leaderboard results/v1
 Every run writes `results/<run_id>/` with `run_meta.json` (config + corpus hash), per-scenario
 `trajectories/` and `scores/`, and `leaderboard.{json,md}`.
 
-## Example leaderboard (50×10 validation, baselines + mock)
+## Published leaderboard (1000×10, v1)
 
 | # | Agent | Mean Ret | Sharpe | Alpha (ann) | Appraisal | Beta |
 |---|---|---|---|---|---|---|
-| 1 | baseline_ew_rebal | +4.41% | +0.18 | +14.55% | +2.03 | +1.29 |
-| 2 | baseline_buyhold | +1.19% | +0.06 | +12.37% | +1.69 | +1.27 |
-| 3 | baseline_momentum | −10.09% | −0.35 | +4.04% | +0.24 | +1.15 |
-| 4 | mock_llm | −15.41% | −0.71 | −1.98% | −0.42 | +0.95 |
+| 1 | baseline_ew_rebal | +4.84% | +0.28 | +0.12% | +0.14 | +0.99 |
+| 2 | baseline_buyhold | +0.25% | +0.10 | -2.41% | -4.51 | +0.99 |
+| 3 | claude-fable-5 | -8.90% | -0.36 | -8.07% | -1.08 | +0.97 |
+| 4 | grok-4.5 | -15.66% | -0.59 | -12.96% | -1.64 | +0.96 |
+| 5 | gpt-5.5 | -16.40% | -0.64 | -13.58% | -1.81 | +0.94 |
+| 6 | gemini-3.5-flash | -24.31% | -0.97 | -18.83% | -2.62 | +0.98 |
+| 7 | baseline_momentum | -26.53% | -1.12 | -20.79% | -4.83 | +1.02 |
 
-*(Illustrative - baselines only. Real model rows come from `configs/default.yaml`.)*
+*Every frontier LLM posted a negative return and negative alpha, and none beat buy-and-hold. Full metrics (Sortino, MaxDD, win rate, turnover) in [`docs/LEADERBOARD.md`](docs/LEADERBOARD.md). The free, API-less smoke test (baselines + `mock_llm` on the bundled 50×10 corpus) is in the quickstart above.*
 
 ## Repository layout
 
