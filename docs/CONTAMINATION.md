@@ -37,7 +37,7 @@ model can "predict" a 2020 crash it effectively memorized.
 - Decoding pinned (`temperature=0` default); model snapshot ids recorded verbatim.
 - Providers with native JSON modes are used in JSON mode; parsing is tolerant and identical across
   providers, so no model is penalized for formatting.
-- Baselines (buy-and-hold, momentum, random) are always run so absolute numbers are interpretable.
+- Baselines (buy-and-hold, equal-weight, momentum) are always run so absolute numbers are interpretable.
 
 ## What a good score does and does not prove
 

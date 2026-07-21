@@ -1,4 +1,4 @@
-# OpenAI model on the 1000x10 corpus. Scoring settings match the baseline run so results are
+# Claude Fable 5 via the Anthropic API on the 1000x10 corpus. Scoring settings match the baseline run so results are
 # comparable; the only difference is max_universe_rows (capped for the LLM prompt vs 0/all for
 # baselines) — that only shapes what the agent sees, not the market or the scoring.
 # corpus_path is overridden on the CLI to the VM's extracted corpus.
@@ -23,5 +23,5 @@ run:
   seed: 12345
 
 agents:
-  - {provider: openai, name: gpt-5.5, model: gpt-5.5, reasoning_effort: medium,
+  - {provider: anthropic, name: claude-fable-5, model: claude-fable-5,
      max_tokens: 16000, max_universe: 250, max_retries: 3}

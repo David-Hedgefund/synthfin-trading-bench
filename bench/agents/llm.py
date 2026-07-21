@@ -190,6 +190,60 @@ class GeminiAgent(LLMAgent):
         return text, usage
 
 
+class FileAgent(LLMAgent):
+    """External-in-the-loop agent: writes each decision's prompt to a queue directory and
+    blocks until an answer file appears, then parses it with the shared parser.
+
+    This is how we benchmark a model that has no API binding available in this process - e.g.
+    Claude driven by Claude Code subagents with no API key. An external orchestrator polls
+    ``<queue_dir>/pending/<scenario>__<step>.txt`` (the exact rendered observation the API
+    agents see) and writes the model's JSON to ``<queue_dir>/decisions/<scenario>__<step>.txt``.
+    Each decision is an independent file with no shared state, so the run is stateless per
+    decision and uses the identical prompt + parser as the API-backed agents - comparable by
+    construction. The fixed system prompt the responder must use is ``prompt.SYSTEM_PROMPT``.
+    """
+
+    provider = "file"
+
+    def _client_init(self):
+        return object()
+
+    def decide(self, obs: Observation) -> Action:
+        import os
+
+        qd = self.params.get("queue_dir", "claude_queue")
+        poll = float(self.params.get("poll_secs", 3.0))
+        timeout = float(self.params.get("timeout_secs", 21600))
+        pend_dir = os.path.join(qd, "pending")
+        dec_dir = os.path.join(qd, "decisions")
+        os.makedirs(pend_dir, exist_ok=True)
+        os.makedirs(dec_dir, exist_ok=True)
+        key = f"{obs.scenario_id}__{obs.step:03d}"
+        pend = os.path.join(pend_dir, key + ".txt")
+        ans = os.path.join(dec_dir, key + ".txt")
+
+        prompt = render_observation(obs, max_universe=self.max_universe)
+        tmp = pend + ".tmp"
+        with open(tmp, "w") as f:
+            f.write(prompt)
+        os.replace(tmp, pend)  # atomic publish so the orchestrator never reads a partial file
+
+        waited = 0.0
+        while not os.path.exists(ans):
+            time.sleep(poll)
+            waited += poll
+            if waited > timeout:
+                raise RuntimeError(f"{self.name}: no decision for {key} after {timeout:.0f}s")
+        text = open(ans).read()
+        action = parse_action(text)
+        action.usage = {"input_tokens": None, "output_tokens": None}  # type: ignore[attr-defined]
+        try:
+            os.remove(pend)
+        except OSError:
+            pass
+        return action
+
+
 class MockLLM(LLMAgent):
     """Offline agent that exercises the full prompt+parse path without any API call.
 

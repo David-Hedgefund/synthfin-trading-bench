@@ -6,7 +6,7 @@ Auth uses the standard HF token resolution: the ``HF_TOKEN`` env var or a prior
 
     export HF_TOKEN=hf_...            # a token with write scope
     python scripts/upload_to_hf.py ./data/synthfin_1000x10 \
-        --repo davidhf/synthfin-trading-bench-1000x10 --private
+        --repo daviddata1/synthfin-trading-bench-1000x10 --private
 
 Start private; flip to public later with:  huggingface-cli repo settings <repo> --private false
 (or the web UI). The dataset's content hash (scripts/hash_corpus.py) should be recorded as the

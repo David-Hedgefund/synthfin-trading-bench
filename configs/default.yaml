@@ -1,5 +1,5 @@
 # Full multi-model config. Requires API keys in the environment:
-#   ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY
+#   ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY, XAI_API_KEY
 # and the matching extras installed:  pip install -e ".[all]"
 #
 # Model ids below are examples — pin the exact snapshots you want to publish.
@@ -21,15 +21,17 @@ run:
 agents:
   # --- baselines (always include: they calibrate the leaderboard) ---
   - {provider: baseline, strategy: buyhold,      name: baseline_buyhold}
+  - {provider: baseline, strategy: ew_rebalance, name: baseline_ew_rebal}
   - {provider: baseline, strategy: momentum,     name: baseline_momentum, top_frac: 0.1}
-  - {provider: baseline, strategy: random,       name: baseline_random, basket: 10, seed: 12345}
 
   # --- Anthropic ---
-  - {provider: anthropic, name: claude-opus-4.8,  model: claude-opus-4-8,        temperature: 0}
-  - {provider: anthropic, name: claude-sonnet-5,  model: claude-sonnet-5,        temperature: 0}
+  - {provider: anthropic, name: claude-fable-5,   model: claude-fable-5,         temperature: 0}
 
   # --- OpenAI ---
-  - {provider: openai,    name: gpt-5.4,          model: gpt-5.4,                temperature: 0}
+  - {provider: openai,    name: gpt-5.5,          model: gpt-5.5,                temperature: 0}
+
+  # --- xAI ---
+  - {provider: xai,       name: grok-4.5,         model: grok-4.5,               temperature: 0}
 
   # --- Google Gemini ---
-  - {provider: gemini,    name: gemini-2.5-pro,   model: gemini-2.5-pro,         temperature: 0}
+  - {provider: gemini,    name: gemini-3.5-flash, model: gemini-3.5-flash,       temperature: 0}

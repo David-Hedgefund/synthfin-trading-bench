@@ -11,7 +11,7 @@ A benchmark is a **task + dataset + leaderboard**, published as three linked art
 1. **Code repository (this repo)** — the harness, scorer, baselines, configs, docs, and tests.
    Host on GitHub under Apache-2.0. This is the source of truth for *how* models are evaluated.
 2. **Dataset** — the frozen corpus, hosted where large data belongs and versioned by content hash.
-   **Recommended: a Hugging Face Dataset** (`davidhf/synthfin-trading-bench`) — it gives you
+   **Recommended: a Hugging Face Dataset** (`daviddata1/synthfin-trading-bench-1000x10`) — it gives you
    versioned revisions, a rendered data card, a viewer, and `datasets.load_dataset(...)` access.
    Alternatives: a release asset / object storage with a published SHA-256. Never commit the corpus
    into the code repo.

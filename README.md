@@ -2,6 +2,11 @@
 
 **A contamination-free sequential trading benchmark for LLM agents.**
 
+![Every frontier LLM lost money trading: on the published 1000x10 corpus, Claude Fable 5, Grok 4.5, GPT-5.5 and Gemini 3.5 Flash all posted negative returns and none beat a buy-and-hold baseline.](assets/synthfin_llm_trading.png)
+
+> On the published 1000x10 benchmark, every frontier LLM we tested lost money and none beat a
+> do-nothing buy-and-hold. See the [leaderboard](docs/LEADERBOARD.md).
+
 SynthFin Trading Bench evaluates a language model as a portfolio manager. Each period the model
 receives a strictly point-in-time view of a market - prices, fundamentals, news, and filings all
 dated on or before the decision day - and outputs a target portfolio. Orders fill at the next

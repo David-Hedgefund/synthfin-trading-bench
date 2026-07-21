@@ -103,6 +103,14 @@ text. The exact mapping is in [`METHODOLOGY.md`](METHODOLOGY.md) §2. Two caveat
 
 ## Licensing
 
-The corpus is distributed for research/evaluation. State the exact license and redistribution terms
-here before public release (e.g. CC BY-NC 4.0 for the data, Apache-2.0 for the harness). Hosting and
-versioning guidance is in [`PUBLISHING.md`](PUBLISHING.md).
+- **Harness (code):** Apache-2.0 (see the repo `LICENSE`).
+- **Corpus (this dataset):** proprietary, released under the
+  [**SynthFin Evaluation License v1.0**](CORPUS_LICENSE.md). Evaluation and non-commercial research
+  use only; **no redistribution** and **no use as training data**; all rights reserved.
+
+The corpus is **not** distributed publicly. It is hosted as a **gated** Hugging Face dataset
+(`daviddata1/synthfin-trading-bench-1000x10`): the card and metadata are discoverable, but the
+files require a manually-approved access request with a click-through agreement to the license
+above. Gating (rather than a public release) is deliberate: it is what preserves the
+contamination-free guarantee over time. Hosting and versioning guidance is in
+[`PUBLISHING.md`](PUBLISHING.md).

@@ -16,5 +16,4 @@ agents:
   - {provider: baseline, strategy: buyhold,     name: baseline_buyhold}
   - {provider: baseline, strategy: ew_rebalance, name: baseline_ew_rebal}
   - {provider: baseline, strategy: momentum,    name: baseline_momentum, top_frac: 0.2}
-  - {provider: baseline, strategy: random,      name: baseline_random, basket: 10, seed: 12345}
   - {provider: mock,     name: mock_llm,        top_k: 8}

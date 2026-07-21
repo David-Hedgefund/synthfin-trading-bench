@@ -6,13 +6,22 @@ from typing import Any
 
 from .base import Agent
 from .baselines import BASELINES, BuyHoldEqual, EqualWeightRebalance, Momentum, RandomAgent
-from .llm import AnthropicAgent, GeminiAgent, LLMAgent, MockLLM, OpenAIAgent, XAIAgent
+from .llm import (
+    AnthropicAgent,
+    FileAgent,
+    GeminiAgent,
+    LLMAgent,
+    MockLLM,
+    OpenAIAgent,
+    XAIAgent,
+)
 
 _PROVIDERS = {
     "anthropic": AnthropicAgent,
     "openai": OpenAIAgent,
     "gemini": GeminiAgent,
     "xai": XAIAgent,
+    "file": FileAgent,
     "mock": MockLLM,
 }
 
